@@ -1,5 +1,5 @@
 ﻿using System;
-using System.columnlections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -350,14 +350,14 @@ namespace cli_life
                 if (count > 1000) break;
             }
             int n = 0;
-            using (StreamReader r = new StreamReader("avrg.txt"))
+            using (StreamReader r = new StreamReader("tres.txt"))
             {
                 float k = float.Parse(r.ReadLine());
                 n = Int32.Parse(r.ReadLine());
                 count += k;
             }
             n++;
-            using (StreamWriter r = new StreamWriter("avrg.txt"))
+            using (StreamWriter r = new StreamWriter("tres.txt"))
             {
                 r.Write(count/n);
                 r.Write('\n');
