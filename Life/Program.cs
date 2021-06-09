@@ -10,23 +10,11 @@ namespace cli_life
 {
     public class Cell
     {
-        public int perest = 0;
         public bool IsAlive;
+        public int combination_s = 0;
         public readonly List<Cell> neighbors = new List<Cell>();
-        private bool IsAliveNext;
-        public void DetermineNextLiveState()
-        {
-            int liveNeighbors = neighbors.Where(x => x.IsAlive).Count();
-            if (IsAlive)
-                IsAliveNext = liveNeighbors == 2 || liveNeighbors == 3;
-            else
-                IsAliveNext = liveNeighbors == 3;
-        }
-        public void Advance()
-        {
-            IsAlive = IsAliveNext;
-        }
-         public Cell()
+        public bool IsAliveNext;
+        public Cell()
         {
         }
         public Cell(int val)
@@ -34,69 +22,35 @@ namespace cli_life
             if (val == 1) IsAlive = true;
             else IsAlive = false;
         }
+          public void Advance()
+        {
+            IsAlive = IsAliveNext;
+        }
+        public void DetermineNextLiveState()
+        {
+            int Neighbor_s = neighbors.Where(x => x.IsAlive).Count();
+            if (IsAlive)
+                IsAliveNext = Neighbor_s == 2 || Neighbor_s == 3;
+            else
+                IsAliveNext = Neighbor_s == 3;
+        }
     }
     public class Board
     {
-        public readonly Cell[,] Cells;
-        public readonly int CellSize;
+        public Cell[,] Cells;
+        public int CellSize;
         public int F = 1;
         public int live_count = 0;
-        public int columnst { get { return Cells.GetLength(0); } }
-        public int rowss { get { return Cells.GetLength(1); } }
-        public int Width { get { return columnst * CellSize; } }
-        public int Height { get { return rowss * CellSize; } }
-
-        public Board(int value,int width, int height, int cellSize, double Live = .1)
-        {
-            CellSize = cellSize;
-            if (value == 0)
-            {
-            Cells = new Cell[width / cellSize, height / cellSize];
-            for (int x = 0; x < columnst; x++)
-                for (int y = 0; y < rowss; y++)
-                    Cells[x, y] = new Cell();
-
-            ConnectNeighbors();
-            Randomize(Live);
-            }
-            else
-                {
-                using (StreamReader r = new StreamReader("test.txt"))
-                {
-                    List<string> matrix = new List<string>();
-                    string str;
-                    int max = 0;
-                    while ((str = r.ReadLine()) != null)
-                    {
-                        matrix.Add(str);
-                        if (str.Length > max) max = str.Length;
-                    }
-                    if (max == 0) return;
-                    Cells = new Cell[max / cellSize, matrix.Count/ cellSize];
-                    for (int x = 0; x < columnst; x++)
-                    { 
-                        for (int y = 0; y < rowss; y++)
-                        {
-                            if (matrix[y].Length <= x)
-                                Cells[x, y] = new Cell(0);
-                            else if (matrix[y][x] == '*') Cells[x, y] = new Cell(1);
-                            else Cells[x, y] = new Cell(0);
-                        }
-                    }
-                    ConnectNeighbors();
-                }
-            }
-
-
-        }
-
-        readonly Random rand = new Random();
-        public void Randomize(double Live)
+        public int Columns { get { return Cells.GetLength(0); } }
+        public int Rows { get { return Cells.GetLength(1); } }
+        public int Width { get { return Columns * CellSize; } }
+        public int Height { get { return Rows * CellSize; } }
+         readonly Random rand = new Random();
+        public void Randomize(double Life)
         {
             foreach (var cell in Cells)
-                cell.IsAlive = rand.NextDouble() < Live;
+                cell.IsAlive = rand.NextDouble() < Life;
         }
-
         public void Advance()
         {
             live_count = 0;
@@ -108,20 +62,56 @@ namespace cli_life
                 cell.Advance();
                 if (cell.IsAlive) live_count++;
             }
-                
         }
+        public Board(int value, int width, int height, int cellSize, double Life = .1)
+        {
+            CellSize = cellSize;
+            if (value == 0)
+            {
+                Cells = new Cell[width / cellSize, height / cellSize];
+                for (int x = 0; x < Columns; x++)
+                    for (int y = 0; y < Rows; y++)
+                        Cells[x, y] = new Cell();
+                ConnectNeighbors();
+                Randomize(Life);
+            }
+            else
+            {
+                using (StreamReader r = new StreamReader("test.txt"))
+                {
+                    List<string> matr = new List<string>();
+                    string curstr;
+                    int max = 0;
+                    while ((curstr = r.ReadLine()) != null)
+                    {
+                        matr.Add(curstr);
+                        if (curstr.Length > max) max = curstr.Length;
+                    }
+                    if (max == 0) return;
+                    Cells = new Cell[max / cellSize, matr.Count/ cellSize];
+                    for (int x = 0; x < Columns; x++)
+                        for (int y = 0; y < Rows; y++)
+                        {
+                            if (matr[y].Length <= x)
+                                Cells[x, y] = new Cell(0);
+                            else if (matr[y][x] == '*') Cells[x, y] = new Cell(1);
+                            else Cells[x, y] = new Cell(0);
+                        }
+                    ConnectNeighbors();
+                }
+            }
+        }
+       
         private void ConnectNeighbors()
         {
-            for (int x = 0; x < columnst; x++)
+            for (int x = 0; x < Columns; x++)
             {
-                for (int y = 0; y < rowss; y++)
+                for (int y = 0; y < Rows; y++)
                 {
-                    int xL = (x > 0) ? x - 1 : columnst - 1;
-                    int xR = (x < columnst - 1) ? x + 1 : 0;
-
-                    int yT = (y > 0) ? y - 1 : rowss - 1;
-                    int yB = (y < rowss - 1) ? y + 1 : 0;
-
+                    int xL = (x > 0) ? x - 1 : Columns - 1;
+                    int xR = (x < Columns - 1) ? x + 1 : 0;
+                    int yT = (y > 0) ? y - 1 : Rows - 1;
+                    int yB = (y < Rows - 1) ? y + 1 : 0;
                     Cells[x, y].neighbors.Add(Cells[xL, yT]);
                     Cells[x, y].neighbors.Add(Cells[x, yT]);
                     Cells[x, y].neighbors.Add(Cells[xR, yT]);
@@ -141,7 +131,7 @@ namespace cli_life
             public int width;
             public int height;
             public int cellSize;
-            public double Live;
+            public double Life;
         }
         static Board board;
         static private void Reset(int val)
@@ -150,97 +140,98 @@ namespace cli_life
             {
                 Item items = new Item();
                 string str = r.ReadToEnd();
-                string strtmp = "";
+                string tmp_str = "";
                 int i = 0;
                 while (str[i] != ':') i++;
                 i++;
                 while (str[i] != ',')
                 {
-                    strtmp = strtmp + str[i];
+                    tmp_str = tmp_str + str[i];
                     i++;
                 }
-                items.width = Int32.Parse(strtmp);
+                items.width = Int32.Parse(tmp_str);
                 while (str[i] != ':') i++;
                 i++;
-                strtmp = "";
-                while (str[i] != ',')
-                     {
-                    strtmp = strtmp + str[i];
-                    i++;
-                }
-                items.height = Int32.Parse(strtmp);
-                while (str[i] != ':') i++;
-                i++;
-                strtmp = "";
+                tmp_str = "";
                 while (str[i] != ',')
                 {
-                    strtmp = strtmp + str[i];
+                    tmp_str = tmp_str + str[i];
                     i++;
                 }
-                items.cellSize = Int32.Parse(strtmp);
+                items.height = Int32.Parse(tmp_str);
                 while (str[i] != ':') i++;
                 i++;
-                strtmp = "";
+                tmp_str = "";
+                while (str[i] != ',')
+                {
+                    tmp_str = tmp_str + str[i];
+                    i++;
+                }
+                items.cellSize = Int32.Parse(tmp_str);
+                while (str[i] != ':') i++;
+                i++;
+                tmp_str = "";
                 while (str[i] != '.')
                 {
-                    strtmp = strtmp + str[i];
+                    tmp_str = tmp_str + str[i];
                     i++;
                 }
                 i++;
-                items.Live = Int32.Parse(strtmp);
-                strtmp = "";
+                items.Life = Int32.Parse(tmp_str);
+                tmp_str = "";
                 while (str[i] != '\r')
-                     {
-                    strtmp = strtmp + str[i];
+                {
+                    tmp_str = tmp_str + str[i];
                     i++;
                 }
                 int st = 1;
-                for (int j = 0; j < strtmp.Length; j++) st = st * 10;
-                items.Live = items.Live + (float)Int32.Parse(strtmp) / st;
+                for (int j = 0; j < tmp_str.Length; j++) st = st * 10;
+                items.Life = items.Life + (float)Int32.Parse(tmp_str) / st;
                 board = new Board(
                     val,
                     width: items.width,
                     height: items.height,
                     cellSize: items.cellSize,
-                    Live: items.Live);
+                    Life: items.Life);
             }
-            
         }
         static void Render()
         {
             using (StreamWriter r = new StreamWriter("test.txt"))
-            for (int rows = 0; rows < board.rowss; rows++)
             {
-                for (int column = 0; column < board.columnst; column++)   
+                for (int row = 0; row < board.Rows; row++)
                 {
-                    var cell = board.Cells[column, rows];
-                    if (cell.IsAlive)
+                    for (int col = 0; col < board.Columns; col++)
                     {
-                        Console.Write('*');
+                        var cell = board.Cells[col, row];
+                        if (cell.IsAlive)
+                        {
+                            Console.Write('*');
                             r.Write('*');
+                        }
+                        else
+                        {
+                            Console.Write(' ');
+                            r.Write(' ');
+                        }
                     }
-                    else
-                    {
-                        Console.Write(' ');
-                             r.Write(' ');
-                    }
-                }
-                Console.Write('\n');
+                    Console.Write('\n');
                     r.Write('\n');
+                }
             }
         }
-        static void Main(string[] ar)
+        static void Main(string[] args)
         {
-             bool eq(int[,] arrayay1, int[,] arrayay2)
+            bool eq(int[,] arr1, int[,] arr2)
             {
-                if (arrayay1.Length != arrayay2.Length) return false;
+                if (arr1.Length != arr2.Length) return false;
                 int F = 1;
-                for (int i = 0; i < arrayay1.Length / 2; i++) 
+                for (int i = 0; i < arr1.Length / 2; i++) 
                 {
                     int F2 = 0;
-                    for (int j = 0; j < arrayay1.Length / 2; j++)
+                    for (int j = 0; j < arr1.Length / 2; j++)
                     {
-                        if (arrayay1[i, 0] == arrayay2[j, 0] && arrayay1[i, 1] == arrayay2[j, 1]) 
+                        if (arr1[i, 0] == arr2[j, 0] && arr1[i, 1] == arr2[j, 1]) 
                         {
                             F2 = 1;
                             break;
@@ -255,7 +246,7 @@ namespace cli_life
                 if (F == 0) return false;
                 else return true;
             }
-            int[,] sort(int[,] array)
+            int[,] sort(int[,] arr)
             {
                 int F1 = 1;
                 int F2 = 1;
@@ -263,32 +254,32 @@ namespace cli_life
                 int F4 = 1;
                 int minX = 10000;
                 int minY = 10000;
-                for (int i = 0; i < array.Length / 2; i++) 
+                for (int i = 0; i < arr.Length / 2; i++) 
                 {
-                    if (array[i, 0] == 0) F1 = 0;
-                    if (array[i, 0] == board.columnst - 1) F2 = 0;
-                    if (array[i, 0] < minX) minX = array[i, 0];
-                    if (array[i, 1] == 0) F3 = 0;
-                    if (array[i, 1] == board.rowss - 1) F4 = 0;
-                    if (array[i, 1] < minY) minY = array[i, 1];
+                    if (arr[i, 0] == 0) F1 = 0;
+                    if (arr[i, 0] == board.Columns - 1) F2 = 0;
+                    if (arr[i, 0] < minX) minX = arr[i, 0];
+                    if (arr[i, 1] == 0) F3 = 0;
+                    if (arr[i, 1] == board.Rows - 1) F4 = 0;
+                    if (arr[i, 1] < minY) minY = arr[i, 1];
                 }
                 if (F1 == 0 && F2 == 0)
                 {
-                    for (int i = 0; i < board.columnst; i++)
+                    for (int i = 0; i < board.Columns; i++)
                     {
                         int F = 0;
-                        for (int j = 0; j < array.Length / 2; j++) 
-                            if (array[j, 0] == board.columnst - i - 1) 
+                        for (int j = 0; j < arr.Length / 2; j++) 
+                            if (arr[j, 0] == board.Columns - i - 1) 
                             {
                                 F = 1;
                                 break;
                             }
                         if (F == 0) 
                         {
-                            for (int j = 0; j < array.Length / 2; j++) 
+                            for (int j = 0; j < arr.Length / 2; j++) 
                             {
-                                if (array[j, 0] < board.columnst - i - 1) array[j, 0] = array[j, 0] + i;
-                                else array[j, 0] = array[j, 0] - board.columnst + i;
+                                if (arr[j, 0] < board.Columns - i - 1) arr[j, 0] = arr[j, 0] + i;
+                                else arr[j, 0] = arr[j, 0] - board.Columns + i;
                             }
                             break;
                         }
@@ -296,35 +287,35 @@ namespace cli_life
                 }
                 if (F3 == 0 && F4 == 0)
                 {
-                    for (int i = 0; i < board.columnst; i++)
+                    for (int i = 0; i < board.Columns; i++)
                     {
                         int F = 0;
-                        for (int j = 0; j < array.Length / 2; j++) 
-                            if (array[j, 1] == board.rowss - i - 1) 
+                        for (int j = 0; j < arr.Length / 2; j++) 
+                            if (arr[j, 1] == board.Rows - i - 1) 
                             {
                                 F = 1;
                                 break;
                             }
                         if (F == 0)
                         {
-                            for (int j = 0; j < array.Length / 2; j++) 
+                            for (int j = 0; j < arr.Length / 2; j++) 
                             {
-                                if (array[j, 1] < board.rowss - i - 1) array[j, 1] = array[j, 1] + i;
-                                else array[j, 1] = array[j, 1] - board.rowss + i;
+                                if (arr[j, 1] < board.Rows - i - 1) arr[j, 1] = arr[j, 1] + i;
+                                else arr[j, 1] = arr[j, 1] - board.Rows + i;
                             }
                             break;
                         }
                     }
                 }
                 if (minX >= 1)
-                    for (int i = 0; i < array.Length / 2; i++) array[i, 0] = array[i, 0] - minX + 1;
-                else for (int i = 0; i < array.Length / 2; i++) array[i, 0]++;
+                    for (int i = 0; i < arr.Length / 2; i++) arr[i, 0] = arr[i, 0] - minX + 1;
+                else for (int i = 0; i < arr.Length / 2; i++) arr[i, 0]++;
                 if (minY >= 1)
-                    for (int i = 0; i < array.Length / 2; i++) array[i, 1] = array[i, 1] - minY + 1;
-                else for (int i = 0; i < array.Length / 2; i++) array[i, 1]++;
-                for (int i = 0; i < array.Length / 2; i++) Console.WriteLine(array[i, 0].ToString() + ' ' + array[i, 1].ToString());
+                    for (int i = 0; i < arr.Length / 2; i++) arr[i, 1] = arr[i, 1] - minY + 1;
+                else for (int i = 0; i < arr.Length / 2; i++) arr[i, 1]++;
+                for (int i = 0; i < arr.Length / 2; i++) Console.WriteLine(arr[i, 0].ToString() + ' ' + arr[i, 1].ToString());
                 Console.WriteLine("\n");
-                return array;
+                return arr;
             }
             float count = 0;
             Reset(0);
@@ -363,39 +354,37 @@ namespace cli_life
                 r.Write('\n');
                 r.Write(n);
             }
-            int perestnamb = 0;
-            for (int x = 0; x < board.columnst; x++)
-            {
-                for (int y = 0; y < board.rowss; y++)
+            int combination_s = 0;
+            for (int x = 0; x < board.Columns; x++)
+                for (int y = 0; y < board.Rows; y++)
                 {
                     if (board.Cells[x,y].IsAlive)
                     {
                         int min = 100000;
                         int F2 = 0;
                         for (int i = 0; i < 8; i++)
-                            if (board.Cells[x, y].neighbors[i].perest > 0 && board.Cells[x, y].neighbors[i].perest < min)
+                            if (board.Cells[x, y].neighbors[i].combination_s > 0 && board.Cells[x, y].neighbors[i].combination_s < min)
                             {
                                 F2 = 1;
-                                min = board.Cells[x, y].neighbors[i].perest;
+                                min = board.Cells[x, y].neighbors[i].combination_s;
                             }
                         if (F2 == 0)
                         {
-                            perestnamb++;
-                            board.Cells[x, y].perest = perestnamb;
+                            combination_s++;
+                            board.Cells[x, y].combination_s = combination_s;
                         }
-                        else board.Cells[x, y].perest = min;
+                        else board.Cells[x, y].combination_s = min;
                     }
                 }
-            }
             int[,] hive = new int[6,2];
             int hive_count = 0;
             hive[0, 0] = 2; hive[0, 1] = 1; hive[1, 0] = 1; hive[1, 1] = 2; hive[2, 0] = 3; hive[2, 1] = 2; hive[3, 0] = 1; hive[3, 1] = 3; hive[4, 0] = 3; hive[4, 1] = 3; hive[5, 0] = 2; hive[5, 1] = 4;
             int[,] loaf = new int[7, 2];
             int loaf_count = 0;
             loaf[0, 0] = 2; loaf[0, 1] = 1; loaf[1, 0] = 3; loaf[1, 1] = 1; loaf[2, 0] = 1; loaf[2, 1] = 2; loaf[3, 0] = 4; loaf[3, 1] = 2; loaf[4, 0] = 2; loaf[4, 1] = 3; loaf[5, 0] = 4; loaf[5, 1] = 3; loaf[6, 0] = 3; loaf[6, 1] = 4;
-            int[,] pull = new int[8, 2];
-            int pull_count = 0;
-            pull[0, 0] = 2; pull[0, 1] = 1; pull[1, 0] = 3; pull[1, 1] = 1; pull[2, 0] = 1; pull[2, 1] = 2; pull[3, 0] = 4; pull[3, 1] = 2; pull[4, 0] = 1; pull[4, 1] = 3; pull[5, 0] = 4; pull[5, 1] = 3; pull[6, 0] = 2; pull[6, 1] = 4; pull[7, 0] = 3; pull[7, 1] = 4;
+            int[,] pool = new int[8, 2];
+            int pool_count = 0;
+            pool[0, 0] = 2; pool[0, 1] = 1; pool[1, 0] = 3; pool[1, 1] = 1; pool[2, 0] = 1; pool[2, 1] = 2; pool[3, 0] = 4; pool[3, 1] = 2; pool[4, 0] = 1; pool[4, 1] = 3; pool[5, 0] = 4; pool[5, 1] = 3; pool[6, 0] = 2; pool[6, 1] = 4; pool[7, 0] = 3; pool[7, 1] = 4;
             int[,] box = new int[4, 2];
             int box_count = 0;
             box[0, 0] = 2; box[0, 1] = 1; box[1, 0] = 1; box[1, 1] = 2; box[2, 0] = 3; box[2, 1] = 2; box[3, 0] = 2; box[3, 1] = 3;
@@ -415,42 +404,42 @@ namespace cli_life
             int ship_count = 0;
             ship[0, 0] = 1; ship[0, 1] = 1; ship[1, 0] = 2; ship[1, 1] = 1; ship[2, 0] = 1; ship[2, 1] = 2; ship[3, 0] = 3; ship[3, 1] = 2; ship[4, 0] = 2; ship[4, 1] = 3; ship[5, 0] = 3; ship[5, 1] = 3;
             int unknown_count = 0;
-            for (int i = 0; i < perestnamb; i++)
+            for (int i = 0; i < combination_s; i++)
             {
-                List<int> array_1 = new List<int>();
-                List<int> array_2 = new List<int>();
-                for (int x = 0; x < board.columnst; x++)
-                    for (int y = 0; y < board.rowss; y++)
+                List<int> arr1 = new List<int>();
+                List<int> arr2 = new List<int>();
+                for (int x = 0; x < board.Columns; x++)
+                    for (int y = 0; y < board.Rows; y++)
                     {
-                        if (board.Cells[x, y].perest == i + 1) 
+                        if (board.Cells[x, y].combination_s == i + 1) 
                         {
-                            array_1.Add(x);
-                            array_2.Add(y);
+                            arr1.Add(x);
+                            arr2.Add(y);
                         }
                     }
-                int[,] array = new int[array_1.Count, 2];
-                for (int j = 0; j < array_1.Count; j++)
+                int[,] arr = new int[arr1.Count, 2];
+                for (int j = 0; j < arr1.Count; j++)
                 {
-                    array[j, 0] = array_1[j];
-                    array[j, 1] = array_2[j];
+                    arr[j, 0] = arr1[j];
+                    arr[j, 1] = arr2[j];
                 }
-                array = sort(array);
-                if (eq(array, hive)) hive_count++;
-                else if (eq(array, loaf)) loaf_count++;
-                else if (eq(array, pull)) pull_count++;
-                else if (eq(array, box)) box_count++;
-                else if (eq(array, block)) block_count++;
-                else if (eq(array, snake)) snake_count++;
-                else if (eq(array, barge)) barge_count++;
-                else if (eq(array, boat)) boat_count++;
-                else if (eq(array, ship)) ship_count++;
+                arr = sort(arr);
+                if (eq(arr, hive)) hive_count++;
+                else if (eq(arr, loaf)) loaf_count++;
+                else if (eq(arr, pool)) pool_count++;
+                else if (eq(arr, box)) box_count++;
+                else if (eq(arr, block)) block_count++;
+                else if (eq(arr, snake)) snake_count++;
+                else if (eq(arr, barge)) barge_count++;
+                else if (eq(arr, boat)) boat_count++;
+                else if (eq(arr, ship)) ship_count++;
                 else unknown_count++;
             }
             Console.WriteLine("\nSurvivors: " + board.live_count.ToString());
-            Console.WriteLine("\nCombinations: " + perestnamb.ToString());
+            Console.WriteLine("\nCombinations: " + combination_s.ToString());
             Console.WriteLine("\nHives: " + hive_count.ToString());
             Console.WriteLine("\nLoafs: " + loaf_count.ToString());
-            Console.WriteLine("\npulls: " + pull_count.ToString());
+            Console.WriteLine("\nPools: " + pool_count.ToString());
             Console.WriteLine("\nBoxes: " + box_count.ToString());
             Console.WriteLine("\nBlocks: " + block_count.ToString());
             Console.WriteLine("\nSnakes: " + snake_count.ToString());
@@ -458,10 +447,8 @@ namespace cli_life
             Console.WriteLine("\nBoats: " + boat_count.ToString());
             Console.WriteLine("\nShips: " + ship_count.ToString());
             Console.WriteLine("\nUnknown: " + unknown_count.ToString());
-            Console.WriteLine("Average generation: " + (count/n).ToString());
+            Console.WriteLine("\nAverage generation: " + (count/n).ToString());
             Console.ReadKey();
-        
-           
         }
     }
 }
